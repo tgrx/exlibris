@@ -48,9 +48,12 @@ pytest-mock = "*"
 
 [packages]
 asyncpg = "*"
+boto3 = "*"
+fastapi = "*"
 gunicorn = "*"
 httpx = "*"
 pydantic = { extras = ["dotenv"], version = "*" }
 python-dotenv = "*"
 sentry-sdk = "*"
+sqlalchemy = "*"
 uvicorn = { extras = ["standard", ], version = "*" }
