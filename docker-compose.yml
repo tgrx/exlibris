@@ -1,44 +1,44 @@
 version: "3.9"
 services:
-  alpha-web:
+  exlibris-web:
     build: ./
-    container_name: alpha-web
+    container_name: exlibris-web
     depends_on:
-      - alpha-db
+      - exlibris-db
     entrypoint: [ "make", "wait-for-db", "run-prod" ]
     environment:
-      DATABASE_URL: "postgresql://alpha:alpha@alpha-db:5432/alpha"
+      DATABASE_URL: "postgresql://exlibris:exlibris@exlibris-db:5432/exlibris"
       MODE_DEBUG: 1
       PORT: 80
       PYTHONPATH: src
       SECRETS_DIR: /run/secrets
-    image: alpha-web
+    image: exlibris-web
     ports:
       - "8888:80"
     restart: unless-stopped
-  alpha-db:
-    container_name: alpha-db
+  exlibris-db:
+    container_name: exlibris-db
     environment:
-      POSTGRES_USER: alpha
-      POSTGRES_PASSWORD: alpha
-      POSTGRES_DB: alpha
+      POSTGRES_USER: exlibris
+      POSTGRES_PASSWORD: exlibris
+      POSTGRES_DB: exlibris
     image: postgres:13.4-alpine
     ports:
       - "5555:5432"
     restart: unless-stopped
     volumes:
-      - alpha-volume:/var/lib/postgresql/data
-  alpha-dba:
-    container_name: alpha-dba
+      - exlibris-volume:/var/lib/postgresql/data
+  exlibris-dba:
+    container_name: exlibris-dba
     image: adminer
     restart: unless-stopped
     ports:
       - "5556:8080"
     volumes:
-      - alpha-volume:/var/lib/postgresql/data
+      - exlibris-volume:/var/lib/postgresql/data
 volumes:
-  alpha-volume:
-    name: alpha-volume
+  exlibris-volume:
+    name: exlibris-volume
     driver: local
     driver_opts:
       type: tmpfs
