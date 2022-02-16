@@ -13,6 +13,7 @@ DIR_IDEA = (DIR_REPO / ".idea").resolve()
 
 DIR_SRC = (DIR_REPO / "src").resolve()
 DIR_FRAMEWORK = (DIR_SRC / "framework").resolve()
+DIR_STATIC = (DIR_SRC / "static").resolve()
 
 DIR_SCRIPTS = (DIR_REPO / "scripts").resolve()
 
