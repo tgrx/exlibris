@@ -43,7 +43,6 @@ endif
 DIR_CONFIG = $(abspath $(DIR_REPO)/config)
 DIR_SCRIPTS = $(abspath $(DIR_REPO)/scripts)
 DIR_SRC := $(abspath $(DIR_REPO)/src)
-DIR_TESTS := $(abspath $(DIR_REPO)/tests)
 
 
 # -----------------------------------------------

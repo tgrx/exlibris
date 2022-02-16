@@ -13,8 +13,13 @@ pytestmark = [
     pytest.mark.unit,
 ]
 
+envs_default = {
+    "TELEGRAM_BOT_TOKEN": "TELEGRAM_BOT_TOKEN",
+    "WEBHOOK_SECRET": "WEBHOOK_SECRET",
+}
 
-@mock.patch.dict(os.environ, {}, clear=True)
+
+@mock.patch.dict(os.environ, {} | envs_default, clear=True)
 @mock.patch("framework.config.Settings.Config.secrets_dir", None)
 def test_default_settings() -> None:
     settings = Settings()
@@ -37,7 +42,7 @@ def test_default_settings() -> None:
     assert settings.db_components_from_database_url() == DatabaseSettings()
 
 
-@mock.patch.dict(os.environ, {}, clear=True)
+@mock.patch.dict(os.environ, {} | envs_default, clear=True)
 @mock.patch("framework.config.Settings.Config.secrets_dir", None)
 def test_database_url_from_db_components() -> None:
     with pytest.raises(ValidationError) as exc_info:
@@ -120,7 +125,8 @@ def test_database_url_from_db_components() -> None:
     os.environ,
     {
         "DATABASE_URL": "postgresql://u:p@h:1/d",
-    },
+    }
+    | envs_default,
     clear=True,
 )
 @mock.patch("framework.config.Settings.Config.secrets_dir", None)

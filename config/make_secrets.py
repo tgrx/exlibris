@@ -7,17 +7,17 @@ from framework.dirs import DIR_CONFIG_SECRETS
 def main():
     settings_values = get_settings_values()
     for setting, value in settings_values.items():
-        print(f"installing {setting}={value}")
+        print(f"installing {setting}={value}")  # noqa: T001
 
         installed, value_actual = install_setting(setting, value)
         prefix = {False: "💤", True: "👍"}[installed]
-        print(f"{prefix} {setting}={value_actual}")
+        print(f"{prefix} {setting}={value_actual}")  # noqa: T001
 
-        print()
+        print()  # noqa: T001
 
 
 def get_settings_values() -> dict[str, str]:
-    props = settings.schema()['properties'].items()
+    props = settings.schema()["properties"].items()
 
     settings_values = {
         name: get_secret_value(prop)
@@ -59,5 +59,5 @@ def get_secret_value(prop: dict[str, Any]) -> str:
     return str(value)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

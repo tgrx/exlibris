@@ -38,7 +38,7 @@ async def handle_webhook_info() -> telegram.WebhookInfo:
 @app.put(f"{API_V1}/setup_webhook")
 async def handle_webhook_setup() -> bool:
     url = f"{settings.HOST}/{WEBHOOK_URL}"
-    ok = await bot.setWebhook(url=url)
+    ok: bool = await bot.setWebhook(url=url)
     return ok
 
 
@@ -70,4 +70,5 @@ async def handle_webhook_update(
 
 
 # todo: VOICE MESSAGES
-# todo: дебаг - кастомные настройки - показывать весь дагестан / выбирать подходящие и самим записать)) по теме
+# todo: дебаг - кастомные настройки - показывать весь дагестан
+#               / выбирать подходящие и самим записать)) по теме

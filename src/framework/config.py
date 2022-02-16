@@ -95,7 +95,9 @@ class Settings(DatabaseSettings):
     REQUEST_TIMEOUT: int = Field(default=30, make_secret=True)
     SENTRY_DSN: Optional[str] = Field(default=None, make_secret=True)
     TELEGRAM_BOT_TOKEN: str = Field(..., make_secret=True)
-    TEST_SERVICE_URL: str = Field(default="http://localhost:8000", make_secret=True)
+    TEST_SERVICE_URL: str = Field(
+        default="http://localhost:8000", make_secret=True
+    )
     WEB_CONCURRENCY: int = Field(default=cpu_count() * 2 + 1, make_secret=True)
     WEBHOOK_SECRET: str = Field(..., make_secret=True)
 

@@ -1,4 +1,7 @@
 from contextlib import asynccontextmanager
+from functools import cache
+from typing import AsyncGenerator
+from typing import Optional
 from uuid import uuid4
 
 from fastapi import Depends
@@ -18,19 +21,25 @@ from sqlalchemy.orm import sessionmaker
 
 from framework.config import settings
 
-_db_url = settings.DATABASE_URL
-if "postgresql" not in _db_url:
-    _db_url = _db_url.replace("postgres", "postgresql")
-if "?" in _db_url:
-    _db_url = _db_url[: _db_url.index("?")]
+
+@cache
+def get_db_url(db_url: Optional[str] = settings.DATABASE_URL) -> str:
+    assert db_url
+    if "postgresql" not in db_url:
+        db_url = db_url.replace("postgres", "postgresql")
+    if "?" in db_url:
+        query = db_url.index("?")
+        db_url = db_url[:query]
+    return db_url
+
 
 engine = create_async_engine(
-    _db_url.replace("://", "+asyncpg://"),
+    get_db_url().replace("://", "+asyncpg://"),
     echo=settings.MODE_DEBUG_SQL,
 )
 
 engine_sync = create_engine(
-    _db_url,
+    get_db_url(),
     echo=settings.MODE_DEBUG_SQL,
 )
 
@@ -42,7 +51,7 @@ Session = sessionmaker(
 )
 
 
-async def begin_session():
+async def begin_session() -> AsyncGenerator[AsyncSession, None]:
     async with Session() as _session:
         async with _session.begin():
             yield _session
@@ -55,13 +64,13 @@ begin_session_txn = asynccontextmanager(begin_session)
 Base = declarative_base()
 
 
-class Model(Base):
+class Model(Base):  # type: ignore
     __abstract__ = True
     __mapper_args__ = {
         "eager_defaults": True,
     }
 
-    id = Column(
+    id = Column(  # noqa: A003,VNE003
         UUID(as_uuid=True),
         default=uuid4,
         primary_key=True,
@@ -75,7 +84,7 @@ class User(Model):
     tg_id = Column(
         BigInteger,
         nullable=False,
-        # XXX: unique! see constraints
+        # XXX: unique! see constraints  # noqa: T102
     )
 
     first_name = Column(
@@ -100,7 +109,7 @@ class User(Model):
         server_default=text("false"),
     )
 
-    # XXX: order matters here!
+    # XXX: order matters here!  # noqa: T102
     __table_args__ = (
         UniqueConstraint(
             tg_id,
@@ -165,7 +174,7 @@ class Raw(Model):
         nullable=True,
     )
 
-    # XXX: order matters here!
+    # XXX: order matters here!  # noqa: T102
     __table_args__ = (
         UniqueConstraint(
             user_id,

@@ -62,12 +62,11 @@ async def handle_edited_message(context: Context) -> ActionT:
         )
 
         if raws:
-            # text = f"обновленная инфа: {[r.id for r in raws]}"
             text = f"обновленная инфа: {raws}"
         else:
             text = "никаких обновлений: всё уже сохранено"
 
-    action = context.bot.sendMessage(
+    action: ActionT = context.bot.sendMessage(
         chat_id=context.message.chat.id,
         text=text,
     )
@@ -86,9 +85,9 @@ async def handle_add(context: Context) -> Coroutine:
         book = await business.create_book(context.session, user=context.user)
         text = f"создал книгу {book.id} из {raws}"
     else:
-        text = f"так а не из чего создавать"
+        text = "так а не из чего создавать"
 
-    action = context.bot.sendMessage(
+    action: ActionT = context.bot.sendMessage(
         chat_id=context.message.chat.id,
         text=text,
     )
@@ -109,9 +108,9 @@ async def handle_clear(context: Context) -> Coroutine:
     if raws_nr:
         text = f"все {raws_nr!r} raw-ки очищены"
     else:
-        text = f"все и так хорошо, нечего очищать"
+        text = "все и так хорошо, нечего очищать"
 
-    action = context.bot.sendMessage(
+    action: ActionT = context.bot.sendMessage(
         chat_id=context.message.chat.id,
         text=text,
     )
@@ -127,9 +126,12 @@ async def handle_find(context: Context) -> Coroutine:
     _err = f"unexpected photo in message {context.message}"
     assert not context.message.photo, _err
 
-    text = f"поиск завершён: ты искал {context.message.text!r}, а мы нашли ХУЙ ТЕБЕ )))0"
+    text = (
+        f"поиск завершён: ты искал {context.message.text!r},"
+        f" а мы нашли ХУЙ ТЕБЕ )))0"
+    )
 
-    action = context.bot.sendMessage(
+    action: ActionT = context.bot.sendMessage(
         chat_id=context.message.chat.id,
         text=text,
     )
@@ -151,9 +153,12 @@ async def handle_default(context: Context) -> Coroutine:
         user=context.user,
     )
 
-    text = f"получил текст: {context.message.text}, сохранил как raw text {raw_text.id}"
+    text = (
+        f"получил текст: {context.message.text},"
+        f" сохранил как raw text {raw_text.id}"
+    )
 
-    action = context.bot.sendMessage(
+    action: ActionT = context.bot.sendMessage(
         chat_id=context.message.chat.id,
         text=text,
     )
@@ -181,7 +186,7 @@ async def handle_photo(context: Context) -> ActionT:
         f"сохранил как raw photo {raw_photo.id}"
     )
 
-    action = context.bot.sendMessage(
+    action: ActionT = context.bot.sendMessage(
         chat_id=context.message.chat.id,
         text=text,
     )
@@ -189,5 +194,5 @@ async def handle_photo(context: Context) -> ActionT:
     return action
 
 
-async def _make_default_action(*_args, **_kwargs) -> None:
+async def _make_default_action(*_args: Any, **_kwargs: Any) -> None:
     pass

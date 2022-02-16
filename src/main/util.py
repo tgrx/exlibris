@@ -1,6 +1,7 @@
 import traceback
 from functools import wraps
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import Iterable
 from typing import TypeVar
@@ -8,9 +9,9 @@ from typing import TypeVar
 from consigliere.telegram.entities import PhotoSize
 
 
-def safe(handler):
+def safe(handler: Callable) -> Callable:
     @wraps(handler)
-    async def safe_handler(*args, **kwargs):
+    async def safe_handler(*args: Any, **kwargs: Any) -> Any:
         try:
             return await handler(*args, **kwargs)
         except Exception:
