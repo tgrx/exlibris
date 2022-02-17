@@ -2,7 +2,7 @@ import sentry_sdk
 
 from framework.config import settings
 
-if 1 or not settings.MODE_DEBUG:
+if not settings.MODE_DEBUG:
     sentry_sdk.init(
         settings.SENTRY_DSN,
         # Set traces_sample_rate to 1.0 to capture 100%

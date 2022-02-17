@@ -37,7 +37,7 @@ async def handle_index() -> str:
 
 @app.get("/e")
 async def handle_sentry_test() -> None:
-    raise Exception("sentry test")
+    raise RuntimeError("sentry test")
 
 
 @app.get(f"{API_V1}/get_webhook_info")
