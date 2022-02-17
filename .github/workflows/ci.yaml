@@ -74,6 +74,8 @@ jobs:
     steps:
       - name: pull code from repo
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # SonarCloud: Shallow clones should be disabled for a better relevancy of analysis
       - name: set up runtime
         uses: actions/setup-python@v2
         with:
@@ -96,13 +98,11 @@ jobs:
       - name: run tests
         if: ${{ steps.restore-build.outputs.cache-hit }}
         run: make tests coverage
-#      - name: upload coverage to codecov.io
-#        uses: codecov/codecov-action@v2
-#        with:
-#          files: ./coverage.xml
-#          name: exlibris
-#          token: ${{ secrets.CODECOV_TOKEN }}
-#          verbose: true
+      - name: '📡 SonarCloud has scanned the project.'
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   check-code-typing:
     needs:
       - build
