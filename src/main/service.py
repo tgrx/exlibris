@@ -8,6 +8,7 @@ from starlette.responses import HTMLResponse
 
 from framework.config import settings
 from framework.dirs import DIR_STATIC
+from framework.logging import logger
 from main import business
 from main import db
 from main import dispatcher
@@ -28,15 +29,23 @@ WEBHOOK_URL = f"wh{settings.WEBHOOK_SECRET}"
 
 @app.get("/", response_class=HTMLResponse)
 async def handle_index() -> str:
+    logger.trace("handling /")
+
     index = DIR_STATIC / "index.html"
+    logger.trace("index.html to read: {}", index.as_posix())
+
     assert index.is_file(), f"{index.as_posix()} is not a file"
+    logger.trace("index.html is ok")
 
     with index.open("r") as src:
-        return src.read()
+        data = src.read()
+        logger.trace("index.html is {} bytes", len(data))
+        return data
 
 
 @app.get("/e")
 async def handle_sentry_test() -> None:
+    logger.trace("sentry test, will raise an exception")
     raise RuntimeError("sentry test")
 
 

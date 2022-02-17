@@ -20,7 +20,7 @@ async def install_user(
     user: telegram.User,
 ) -> db.User:
     """
-    Registers an user: creates it if not exist otherwise updates it.
+    Registers a user: creates it if not exist otherwise updates it.
     :param session: database session
     :param user: telegram user
     :return: database user

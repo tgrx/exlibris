@@ -1,6 +1,8 @@
 [run]
 branch = True
-omit = src/main/app.py
+omit =
+    src/main/app.py
+    src/migrations/*
 relative_files = True
 source = src
 

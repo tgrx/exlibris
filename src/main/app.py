@@ -1,7 +1,7 @@
 import uvicorn
 
 from framework.config import settings
-from framework.logging import get_logger
+from framework.logging import logger
 from main.service import app
 
 SERVER_RUNNING_BANNER = """
@@ -13,8 +13,6 @@ Visit {proto}{host}:{port}
 
 ..........................................
 """
-
-logger = get_logger("app")
 
 
 def run() -> None:
@@ -33,9 +31,9 @@ def run() -> None:
             reload=False,
         )
     except KeyboardInterrupt:
-        logger.debug("stopping server")
+        logger.trace("stopping server")
     finally:
-        logger.info("server has been shut down")
+        logger.trace("server has been shut down")
 
 
 if __name__ == "__main__":

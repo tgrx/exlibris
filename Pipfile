@@ -55,10 +55,11 @@ consigliere = "*"
 fastapi = "*"
 gunicorn = "*"
 httpx = "*"
+loguru = "*"
 orjson = "*"
 psycopg2 = "*"
 pydantic = { extras = ["dotenv"], version = "*" }
 python-dotenv = "*"
-sentry-sdk = "*"
+sentry-sdk = { version = "<1.5.5" }
 sqlalchemy = "*"
 uvicorn = { extras = ["standard", ], version = "*" }
