@@ -22,31 +22,33 @@ jobs:
         python-version: [ 3.9 ]
     runs-on: ${{ matrix.os }}
     outputs:
-      runs-on: ${{ matrix.os }}
-      python-version: ${{ matrix.python-version }}
-      python-location: ${{ env.pythonLocation }}
       pipfile: ${{ steps.pipfile-hash.outputs.pipfile-hash }}
+      python-location: ${{ env.pythonLocation }}
+      python-version: ${{ matrix.python-version }}
+      runs-on: ${{ matrix.os }}
     steps:
-      - name: pull code from repo
+      - name: '🧱 The code is pulled from repo.'
         uses: actions/checkout@v2
-      - name: set up runtime
+        with:
+          fetch-depth: 0
+      - name: '🐍 Python is set up.'
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
           architecture: 'x64'
-      - name: cache runtime
+          python-version: ${{ matrix.python-version }}
+      - name: '☁️ The whole runtime is cached.'
         id: cache-runtime
         uses: actions/cache@v2
         with:
-          path: ${{ env.pythonLocation }}
           key: cache-runtime-${{ matrix.os }}-${{ env.pythonLocation }}-${{ hashFiles('Pipfile.lock') }}
-      - name: set pipfile hash
+          path: ${{ env.pythonLocation }}
+      - name: '🛠 Pipfile.lock hash is set.'
         id: pipfile-hash
         run: echo "::set-output name=pipfile-hash::${{ hashFiles('Pipfile.lock') }}"
-      - name: install pipenv
+      - name: '🪛 Pipenv is installed.'
         if: ${{ !steps.cache-runtime.outputs.cache-hit }}
         run: pip install pipenv
-      - name: install python packages
+      - name: '🔋 The dependencies are installed.'
         if: ${{ !steps.cache-runtime.outputs.cache-hit }}
         run: make venv-deploy-all
   run-tests:
@@ -72,30 +74,30 @@ jobs:
           POSTGRES_PASSWORD: ci
           POSTGRES_USER: ci
     steps:
-      - name: pull code from repo
+      - name: '🧱 The code is pulled from repo.'
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # SonarCloud: Shallow clones should be disabled for a better relevancy of analysis
-      - name: set up runtime
+          fetch-depth: 0
+      - name: '🐍 Python is set up.'
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ needs.build.outputs.python-version }}
           architecture: 'x64'
-      - name: restore build from cache
+          python-version: ${{ needs.build.outputs.python-version }}
+      - name: '🌩 The whole runtime is restored from cache.'
         id: restore-build
         uses: actions/cache@v2
         with:
-          path: ${{ needs.build.outputs.python-location }}
           key: cache-runtime-${{ needs.build.outputs.runs-on }}-${{ needs.build.outputs.python-location }}-${{ needs.build.outputs.pipfile }}
-      - name: perform release steps
+          path: ${{ needs.build.outputs.python-location }}
+      - name: '🛠 The release steps are performed.'
         if: ${{ steps.restore-build.outputs.cache-hit }}
         run: |
           chmod 0600 config/.pgpass
           make initdb release
-      - name: run production web server
+      - name: '🏎 The production web server is started.'
         if: ${{ steps.restore-build.outputs.cache-hit }}
         run: make run-prod &
-      - name: run tests
+      - name: '🚓 The tests are started.'
         if: ${{ steps.restore-build.outputs.cache-hit }}
         run: make tests coverage
       - name: '📡 SonarCloud has scanned the project.'
@@ -108,20 +110,22 @@ jobs:
       - build
     runs-on: ${{ needs.build.outputs.runs-on }}
     steps:
-      - name: pull code from repo
+      - name: '🧱 The code is pulled from repo.'
         uses: actions/checkout@v2
-      - name: set up runtime
+        with:
+          fetch-depth: 0
+      - name: '🐍 Python is set up.'
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ needs.build.outputs.python-version }}
           architecture: 'x64'
-      - name: restore build from cache
+          python-version: ${{ needs.build.outputs.python-version }}
+      - name: '🌩 The whole runtime is restored from cache.'
         id: restore-build
         uses: actions/cache@v2
         with:
-          path: ${{ needs.build.outputs.python-location }}
           key: cache-runtime-${{ needs.build.outputs.runs-on }}-${{ needs.build.outputs.python-location }}-${{ needs.build.outputs.pipfile }}
-      - name: check code typing
+          path: ${{ needs.build.outputs.python-location }}
+      - name: '🚓 The code typing is checked.'
         if: ${{ steps.restore-build.outputs.cache-hit }}
         run: make code-typing
   check-code-format:
@@ -129,20 +133,22 @@ jobs:
       - build
     runs-on: ${{ needs.build.outputs.runs-on }}
     steps:
-      - name: pull code from repo
+      - name: '🧱 The code is pulled from repo.'
         uses: actions/checkout@v2
-      - name: set up runtime
+        with:
+          fetch-depth: 0
+      - name: '🐍 Python is set up.'
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ needs.build.outputs.python-version }}
           architecture: 'x64'
-      - name: restore build from cache
+          python-version: ${{ needs.build.outputs.python-version }}
+      - name: '🌩 The whole runtime is restored from cache.'
         id: restore-build
         uses: actions/cache@v2
         with:
-          path: ${{ needs.build.outputs.python-location }}
           key: cache-runtime-${{ needs.build.outputs.runs-on }}-${{ needs.build.outputs.python-location }}-${{ needs.build.outputs.pipfile }}
-      - name: check code format
+          path: ${{ needs.build.outputs.python-location }}
+      - name: '🚓 The code format is checked.'
         if: ${{ steps.restore-build.outputs.cache-hit }}
         run: make code-format
   run-code-linters:
@@ -150,19 +156,21 @@ jobs:
       - build
     runs-on: ${{ needs.build.outputs.runs-on }}
     steps:
-      - name: pull code from repo
+      - name: '🧱 The code is pulled from repo.'
         uses: actions/checkout@v2
-      - name: set up runtime
+        with:
+          fetch-depth: 0
+      - name: '🐍 Python is set up.'
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ needs.build.outputs.python-version }}
           architecture: 'x64'
-      - name: restore build from cache
+          python-version: ${{ needs.build.outputs.python-version }}
+      - name: '🌩 The whole runtime is restored from cache.'
         id: restore-build
         uses: actions/cache@v2
         with:
-          path: ${{ needs.build.outputs.python-location }}
           key: cache-runtime-${{ needs.build.outputs.runs-on }}-${{ needs.build.outputs.python-location }}-${{ needs.build.outputs.pipfile }}
-      - name: run code linters
+          path: ${{ needs.build.outputs.python-location }}
+      - name: '🚓 The code style is checked.'
         if: ${{ steps.restore-build.outputs.cache-hit }}
         run: make code-linters
