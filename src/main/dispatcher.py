@@ -99,7 +99,7 @@ async def handle_clear(context: Context) -> Coroutine:
     _err = f"unexpected text in message {context.message}"
     assert context.message.text == "/clear", _err
     _err = f"unexpected photo in message {context.message}"
-    assert not context.message.photo
+    assert not context.message.photo, _err
 
     raws_nr = await business.remove_unbound_raws(
         context.session,
@@ -192,7 +192,3 @@ async def handle_photo(context: Context) -> ActionT:
     )
 
     return action
-
-
-async def _make_default_action(*_args: Any, **_kwargs: Any) -> None:
-    pass
