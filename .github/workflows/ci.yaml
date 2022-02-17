@@ -50,6 +50,10 @@ jobs:
         if: ${{ !steps.cache-runtime.outputs.cache-hit }}
         run: make venv-deploy-all
   run-tests:
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      TELEGRAM_BOT_TOKEN: TELEGRAM_BOT_TOKEN
+      WEBHOOK_SECRET: WEBHOOK_SECRET
     needs:
       - build
     runs-on: ${{ needs.build.outputs.runs-on }}
@@ -92,13 +96,13 @@ jobs:
       - name: run tests
         if: ${{ steps.restore-build.outputs.cache-hit }}
         run: make tests coverage
-      - name: upload coverage to codecov.io
-        uses: codecov/codecov-action@v2
-        with:
-          files: ./coverage.xml
-          name: alpha
-          token: ${{ secrets.CODECOV_TOKEN }}
-          verbose: true
+#      - name: upload coverage to codecov.io
+#        uses: codecov/codecov-action@v2
+#        with:
+#          files: ./coverage.xml
+#          name: exlibris
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          verbose: true
   check-code-typing:
     needs:
       - build
