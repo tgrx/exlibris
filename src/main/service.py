@@ -2,6 +2,8 @@ from consigliere import telegram
 from consigliere.bot import Bot
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
+from starlette.middleware import Middleware
 from starlette.responses import HTMLResponse
 
 from framework.config import settings
@@ -11,7 +13,11 @@ from main import db
 from main import dispatcher
 from main.util import safe
 
-app = FastAPI()
+app = FastAPI(
+    middleware=[
+        Middleware(SentryAsgiMiddleware),
+    ],
+)
 app.mount("/static", StaticFiles(directory=DIR_STATIC), name="static")
 
 bot = Bot(settings.TELEGRAM_BOT_TOKEN)
@@ -27,6 +33,11 @@ async def handle_index() -> str:
 
     with index.open("r") as src:
         return src.read()
+
+
+@app.get("/e")
+async def handle_sentry_test() -> None:
+    raise Exception("sentry test")
 
 
 @app.get(f"{API_V1}/get_webhook_info")
@@ -67,8 +78,3 @@ async def handle_webhook_update(
     action = await dispatcher.dispatch(ctx)
     if action:
         await action
-
-
-# todo: VOICE MESSAGES
-# todo: дебаг - кастомные настройки - показывать весь дагестан
-#               / выбирать подходящие и самим записать)) по теме

@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from framework.config import settings
-from main.app import app
+from main.service import app
 
 TIMEOUT = 4
 
