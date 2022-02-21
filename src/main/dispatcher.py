@@ -1,8 +1,8 @@
 from typing import Any
 from typing import Callable
 from typing import Coroutine
-from typing import NamedTuple
 
+import attrs
 from consigliere import telegram
 from consigliere.bot import Bot
 
@@ -12,7 +12,8 @@ from main.consts import BOT_COMMANDS
 from main.util import select_max_size_photo
 
 
-class Context(NamedTuple):
+@attrs.define
+class Context:
     bot: Bot
     edited: bool
     message: telegram.Message
@@ -74,7 +75,7 @@ async def handle_edited_message(context: Context) -> ActionT:
     return action
 
 
-async def handle_add(context: Context) -> Coroutine:
+async def handle_add(context: Context) -> ActionT:
     _err = f"unexpected text in message {context.message}"
     assert context.message.text == "/add", _err
     _err = f"unexpected photo in message {context.message}"
@@ -95,7 +96,7 @@ async def handle_add(context: Context) -> Coroutine:
     return action
 
 
-async def handle_clear(context: Context) -> Coroutine:
+async def handle_clear(context: Context) -> ActionT:
     _err = f"unexpected text in message {context.message}"
     assert context.message.text == "/clear", _err
     _err = f"unexpected photo in message {context.message}"
@@ -118,7 +119,7 @@ async def handle_clear(context: Context) -> Coroutine:
     return action
 
 
-async def handle_find(context: Context) -> Coroutine:
+async def handle_find(context: Context) -> ActionT:
     _err = f"no text in message {context.message}"
     assert context.message.text, _err
     _err = f"invalid command text in message {context.message}"
@@ -139,7 +140,7 @@ async def handle_find(context: Context) -> Coroutine:
     return action
 
 
-async def handle_default(context: Context) -> Coroutine:
+async def handle_default(context: Context) -> ActionT:
     _err = f"no text in message {context.message}"
     assert context.message.text, _err
 

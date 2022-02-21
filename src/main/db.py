@@ -1,10 +1,7 @@
-from contextlib import asynccontextmanager
 from functools import cache
-from typing import AsyncGenerator
 from typing import Optional
 from uuid import uuid4
 
-from fastapi import Depends
 from sqlalchemy import BigInteger
 from sqlalchemy import Boolean
 from sqlalchemy import Column
@@ -45,23 +42,13 @@ engine_sync = create_engine(
 
 Session = sessionmaker(
     engine,
+    autocommit=False,
     class_=AsyncSession,
     expire_on_commit=False,
     future=True,
 )
 
-
-async def begin_session() -> AsyncGenerator[AsyncSession, None]:
-    async with Session() as _session:
-        async with _session.begin():
-            yield _session
-
-
-SessionDependency = Depends(begin_session)
-
-begin_session_txn = asynccontextmanager(begin_session)
-
-Base = declarative_base()
+Base = declarative_base()  # todo: create a decorated class, for typing
 
 
 class Model(Base):  # type: ignore
@@ -84,7 +71,7 @@ class User(Model):
     tg_id = Column(
         BigInteger,
         nullable=False,
-        # XXX: unique! see constraints  # noqa: T102
+        # unique! see constraints
     )
 
     first_name = Column(
@@ -109,8 +96,8 @@ class User(Model):
         server_default=text("false"),
     )
 
-    # XXX: order matters here!  # noqa: T102
     __table_args__ = (
+        # order matters here!
         UniqueConstraint(
             tg_id,
             name="xxx_user_unique_tg_id",
@@ -174,8 +161,8 @@ class Raw(Model):
         nullable=True,
     )
 
-    # XXX: order matters here!  # noqa: T102
     __table_args__ = (
+        # order matters here!
         UniqueConstraint(
             user_id,
             message_id,

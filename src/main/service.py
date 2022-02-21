@@ -64,26 +64,25 @@ async def handle_webhook_setup() -> bool:
 
 @app.post(f"/{WEBHOOK_URL}")
 @safe
-async def handle_webhook_update(
-    update: telegram.Update,
-    session: db.Session = db.SessionDependency,
-) -> None:
+async def handle_webhook_update(update: telegram.Update) -> None:
     message, edited = (
         (update.message, False)
         if update.message
         else (update.edited_message, True)
     )
 
-    user = await business.install_user(session, user=message.from_)
+    async with db.Session.begin() as session:
+        user = await business.install_user(session, user=message.from_)
 
-    ctx = dispatcher.Context(
-        bot=bot,
-        edited=edited,
-        message=message,
-        session=session,
-        user=user,
-    )
+    async with db.Session.begin() as session:
+        ctx = dispatcher.Context(
+            bot=bot,
+            edited=edited,
+            message=message,
+            session=session,
+            user=user,
+        )
 
-    action = await dispatcher.dispatch(ctx)
-    if action:
-        await action
+        action = await dispatcher.dispatch(ctx)
+        if action:
+            await action

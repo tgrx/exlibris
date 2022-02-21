@@ -2,9 +2,7 @@ import os
 from unittest import mock
 
 import pytest
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from main.db import begin_session_txn
 from main.db import get_db_url
 
 pytestmark = [
@@ -30,9 +28,3 @@ envs_default = {
 )
 def test_schema_adaptation_1(env: str, actual: str) -> None:
     assert get_db_url(env) == actual
-
-
-@pytest.mark.asyncio
-async def test_begin_session() -> None:
-    async with begin_session_txn() as sess:
-        assert isinstance(sess, AsyncSession)

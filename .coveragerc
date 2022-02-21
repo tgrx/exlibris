@@ -2,6 +2,7 @@
 branch = True
 omit =
     src/main/app.py
+    src/management/*
     src/migrations/*
 relative_files = True
 source = src
