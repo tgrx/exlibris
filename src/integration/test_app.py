@@ -1,5 +1,12 @@
+from typing import Optional
+from typing import cast
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+
 import httpx
+import orjson
 import pytest
+from consigliere import telegram
 from pytest_mock import MockerFixture
 from starlette import status
 
@@ -15,6 +22,7 @@ pytestmark = [
 TCP_PORTS_RANGE = range(1000, 65535)
 
 
+@pytest.mark.asyncio
 async def test_service_index(asgi_client: httpx.AsyncClient) -> None:
     resp: httpx.Response = await asgi_client.get("/")
     assert resp.status_code == status.HTTP_200_OK
@@ -24,12 +32,14 @@ async def test_service_index(asgi_client: httpx.AsyncClient) -> None:
         assert resp.text == html
 
 
+@pytest.mark.asyncio
 async def test_service_sentry_test(asgi_client: httpx.AsyncClient) -> None:
     with pytest.raises(RuntimeError) as exc_info:
         await asgi_client.get("/e")
     assert str(exc_info.value) == "sentry test"
 
 
+@pytest.mark.asyncio
 async def test_service_api_get_webhook_info(
     asgi_client: httpx.AsyncClient,
     mocker: MockerFixture,
@@ -42,6 +52,7 @@ async def test_service_api_get_webhook_info(
     assert resp.json() == bot.getWebhookInfo.return_value
 
 
+@pytest.mark.asyncio
 async def test_service_api_webhook_setup(
     asgi_client: httpx.AsyncClient,
     mocker: MockerFixture,
@@ -57,7 +68,70 @@ async def test_service_api_webhook_setup(
     )
 
 
+@pytest.mark.parametrize("action", [None, AsyncMock()])
+@pytest.mark.asyncio
+async def test_service_webhook(
+    asgi_client: httpx.AsyncClient,
+    mocker: MockerFixture,
+    action: Optional[AsyncMock],
+) -> None:
+    update = telegram.Update(
+        update_id=1,
+        message=telegram.Message(
+            message_id=2,
+            date="2000-01-01T00:00:00Z",
+            chat=telegram.Chat(
+                id=3,
+            ),
+            from_=telegram.User(
+                first_name="user",
+                id=4,
+                is_bot=True,
+            ),
+        ),
+    )
+
+    bot = mocker.patch("main.service.bot", autospec=True)
+    business = mocker.patch("main.service.business", autospec=True)
+    business.install_user.return_value = update.message.from_
+
+    db = mocker.patch("main.service.db", autospec=True)
+    session_ctx = MagicMock()
+    session_ctx.__aenter__.return_value = "session"
+    db.Session.begin.return_value = session_ctx
+    dispatcher_dispatch = mocker.patch(
+        "main.service.dispatcher.dispatch",
+        autospec=True,
+    )
+    dispatcher_dispatch.return_value = action() if action else None
+
+    resp: httpx.Response = await asgi_client.post(
+        WEBHOOK_URL,
+        data=cast(dict, orjson.dumps(update.dict())),
+    )
+
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.json() is None
+
+    assert db.Session.begin.call_count == 2
+
+    business.install_user.assert_called_once_with(
+        "session", user=update.message.from_
+    )
+
+    ctx = dispatcher_dispatch.call_args.args[0]
+    assert ctx.bot is bot
+    assert ctx.edited is False
+    assert ctx.message == update.message
+    assert ctx.session == "session"
+    assert ctx.user == update.message.from_
+
+    if action:
+        action.assert_awaited_once()
+
+
 @pytest.mark.webapp
+@pytest.mark.asyncio
 async def test_web_app(web_client: httpx.AsyncClient) -> None:
     try:
         resp: httpx.Response = await web_client.get("/")
