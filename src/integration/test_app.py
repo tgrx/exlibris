@@ -12,6 +12,7 @@ from starlette import status
 
 from framework.config import settings
 from framework.dirs import DIR_STATIC
+from main import db
 from main.service import WEBHOOK_URL
 
 pytestmark = [
@@ -22,7 +23,6 @@ pytestmark = [
 TCP_PORTS_RANGE = range(1000, 65535)
 
 
-@pytest.mark.asyncio
 async def test_service_index(asgi_client: httpx.AsyncClient) -> None:
     resp: httpx.Response = await asgi_client.get("/")
     assert resp.status_code == status.HTTP_200_OK
@@ -32,14 +32,12 @@ async def test_service_index(asgi_client: httpx.AsyncClient) -> None:
         assert resp.text == html
 
 
-@pytest.mark.asyncio
 async def test_service_sentry_test(asgi_client: httpx.AsyncClient) -> None:
     with pytest.raises(RuntimeError) as exc_info:
         await asgi_client.get("/e")
     assert str(exc_info.value) == "sentry test"
 
 
-@pytest.mark.asyncio
 async def test_service_api_get_webhook_info(
     asgi_client: httpx.AsyncClient,
     mocker: MockerFixture,
@@ -52,7 +50,6 @@ async def test_service_api_get_webhook_info(
     assert resp.json() == bot.getWebhookInfo.return_value
 
 
-@pytest.mark.asyncio
 async def test_service_api_webhook_setup(
     asgi_client: httpx.AsyncClient,
     mocker: MockerFixture,
@@ -69,9 +66,9 @@ async def test_service_api_webhook_setup(
 
 
 @pytest.mark.parametrize("action", [None, AsyncMock()])
-@pytest.mark.asyncio
 async def test_service_webhook(
     asgi_client: httpx.AsyncClient,
+    session2: db.Session,
     mocker: MockerFixture,
     action: Optional[AsyncMock],
 ) -> None:
@@ -83,22 +80,22 @@ async def test_service_webhook(
             chat=telegram.Chat(
                 id=3,
             ),
-            from_=telegram.User(
-                first_name="user",
-                id=4,
-                is_bot=True,
-            ),
+            **{
+                "from": telegram.User(
+                    first_name="user",
+                    id=4,
+                    is_bot=True,
+                )
+            },
         ),
     )
 
-    bot = mocker.patch("main.service.bot", autospec=True)
-    business = mocker.patch("main.service.business", autospec=True)
-    business.install_user.return_value = update.message.from_
+    mock_bot = mocker.patch("main.service.bot", autospec=True)
 
-    db = mocker.patch("main.service.db", autospec=True)
-    session_ctx = MagicMock()
-    session_ctx.__aenter__.return_value = "session"
-    db.Session.begin.return_value = session_ctx
+    mock_db = mocker.patch("main.service.db", autospec=True)
+    mock_session_ctx = MagicMock()
+    mock_session_ctx.__aenter__.return_value = session2
+    mock_db.Session.begin.return_value = mock_session_ctx
     dispatcher_dispatch = mocker.patch(
         "main.service.dispatcher.dispatch",
         autospec=True,
@@ -107,31 +104,27 @@ async def test_service_webhook(
 
     resp: httpx.Response = await asgi_client.post(
         WEBHOOK_URL,
-        data=cast(dict, orjson.dumps(update.dict())),
+        data=cast(dict, orjson.dumps(update.dict(by_alias=True))),
     )
 
     assert resp.status_code == status.HTTP_200_OK
     assert resp.json() is None
 
-    assert db.Session.begin.call_count == 2
-
-    business.install_user.assert_called_once_with(
-        "session", user=update.message.from_
-    )
+    assert mock_db.Session.begin.call_count == 2
 
     ctx = dispatcher_dispatch.call_args.args[0]
-    assert ctx.bot is bot
+    assert ctx.bot is mock_bot
     assert ctx.edited is False
     assert ctx.message == update.message
-    assert ctx.session == "session"
-    assert ctx.user == update.message.from_
+    assert ctx.session == session2
+    assert ctx.user.tg_id == update.message.from_.id
+    assert ctx.user.first_name == update.message.from_.first_name
 
     if action:
         action.assert_awaited_once()
 
 
 @pytest.mark.webapp
-@pytest.mark.asyncio
 async def test_web_app(web_client: httpx.AsyncClient) -> None:
     try:
         resp: httpx.Response = await web_client.get("/")

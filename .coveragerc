@@ -1,5 +1,7 @@
 [run]
 branch = True
+# fixme: bug with sqlalchemy 1.4
+concurrency = greenlet
 omit =
     src/main/app.py
     src/management/*

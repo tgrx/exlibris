@@ -23,6 +23,7 @@ profile = "black"
 
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 console_output_style = "count"
 filterwarnings = [
     "ignore::DeprecationWarning",
