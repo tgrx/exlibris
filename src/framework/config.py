@@ -11,35 +11,40 @@ from pydantic.error_wrappers import ErrorWrapper
 from framework.dirs import DIR_CONFIG_SECRETS
 
 
-class DatabaseSettings(BaseSettings):
-    DATABASE_URL: Optional[str] = Field()
-    DB_DRIVER: Optional[str] = Field()
-    DB_HOST: Optional[str] = Field(env=["DB_HOST"])
-    DB_NAME: Optional[str] = Field(
-        env=[
-            "DB_NAME",
-            "POSTGRES_DB",
-        ]
-    )
-    DB_PASSWORD: Optional[str] = Field(
-        env=[
-            "DB_PASSWORD",
-            "POSTGRES_PASSWORD",
-        ]
-    )
-    DB_PORT: Optional[int] = Field(env=["DB_PORT"])
-    DB_USER: Optional[str] = Field(
-        env=[
-            "DB_USER",
-            "POSTGRES_USER",
-        ]
-    )
-
+class _Settings(BaseSettings):
     class Config:
         case_sensitive = True
         env_file = ".env"
         env_file_encoding = "utf-8"
         secrets_dir = DIR_CONFIG_SECRETS.as_posix()
+
+
+class DatabaseSettings(_Settings):
+    DATABASE_URL: Optional[str] = Field(make_secret=True)
+    DB_DRIVER: Optional[str] = Field(exclude=True)
+    DB_HOST: Optional[str] = Field(exclude=True)
+    DB_NAME: Optional[str] = Field(
+        env=[
+            "DB_NAME",
+            "POSTGRES_DB",
+        ],
+        exclude=True,
+    )
+    DB_PASSWORD: Optional[str] = Field(
+        env=[
+            "DB_PASSWORD",
+            "POSTGRES_PASSWORD",
+        ],
+        exclude=True,
+    )
+    DB_PORT: Optional[int] = Field(exclude=True)
+    DB_USER: Optional[str] = Field(
+        env=[
+            "DB_USER",
+            "POSTGRES_USER",
+        ],
+        exclude=True,
+    )
 
     def database_url_from_db_components(self) -> str:
         def fail_validation(error_message: str) -> NoReturn:
@@ -62,7 +67,7 @@ class DatabaseSettings(BaseSettings):
         if not self.DB_USER and self.DB_PASSWORD:
             fail_validation("db user MUST be set when password is set")
 
-        netloc = ":".join(filter(bool, (self.DB_HOST, self.DB_PORT)))  # type: ignore  # noqa: E501
+        netloc = ":".join(map(str, filter(bool, (self.DB_HOST, self.DB_PORT))))
         userinfo = ":".join(filter(bool, (self.DB_USER, self.DB_PASSWORD)))  # type: ignore  # noqa: E501
 
         if not netloc and userinfo:
@@ -81,15 +86,20 @@ class DatabaseSettings(BaseSettings):
 class Settings(DatabaseSettings):
     __name__ = "Settings"  # noqa: VNE003
 
-    HEROKU_API_TOKEN: Optional[str] = Field()
-    HEROKU_APP_NAME: Optional[str] = Field()
-    HOST: str = Field(default="localhost")
-    MODE_DEBUG: bool = Field(default=False)
-    PORT: int = Field(default=8000)
-    REQUEST_TIMEOUT: int = Field(default=30)
-    SENTRY_DSN: Optional[str] = Field()
-    TEST_SERVICE_URL: str = Field(default="http://localhost:8000")
-    WEB_CONCURRENCY: int = Field(default=cpu_count() * 2 + 1)
+    HEROKU_API_TOKEN: Optional[str] = Field(default=None, make_secret=True)
+    HEROKU_APP_NAME: Optional[str] = Field(default=None, make_secret=True)
+    HOST: str = Field(default="localhost", make_secret=True)
+    MODE_DEBUG: bool = Field(default=False, make_secret=True)
+    MODE_DEBUG_SQL: bool = Field(default=False, make_secret=True)
+    PORT: int = Field(default=8000, make_secret=True)
+    REQUEST_TIMEOUT: int = Field(default=30, make_secret=True)
+    SENTRY_DSN: Optional[str] = Field(default=None, make_secret=True)
+    TELEGRAM_BOT_TOKEN: str = Field(..., make_secret=True)
+    TEST_SERVICE_URL: str = Field(
+        default="http://localhost:8000", make_secret=True
+    )
+    WEB_CONCURRENCY: int = Field(default=cpu_count() * 2 + 1, make_secret=True)
+    WEBHOOK_SECRET: str = Field(..., make_secret=True)
 
     def db_components_from_database_url(self) -> DatabaseSettings:
         if not self.DATABASE_URL:

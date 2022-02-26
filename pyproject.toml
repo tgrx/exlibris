@@ -23,6 +23,7 @@ profile = "black"
 
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 console_output_style = "count"
 filterwarnings = [
     "ignore::DeprecationWarning",
@@ -33,10 +34,13 @@ markers = [
     "unit",
 ]
 testpaths = [
-    "src/framework/tests",
-    "tests",
+    "src",
 ]
-addopts = "--cov --no-cov-on-fail --cov-fail-under=0"
+addopts = [
+    "--cov",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
 
 
 [tool.mypy]
@@ -44,7 +48,8 @@ check_untyped_defs = true
 disallow_incomplete_defs = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
-files = ["src", "tests",]
+exclude = ["src/migrations/.*"]
+files = ["src", ]
 no_implicit_optional = true
 pretty = true
 python_version = "3.9"
@@ -58,6 +63,9 @@ warn_unused_ignores = true
 [[tool.mypy.overrides]]
 module = [
     "asyncpg",
+    "consigliere.*",
+    "devtools",
+    "sqlalchemy.*",
     "uvicorn",
 ]
 ignore_missing_imports = true

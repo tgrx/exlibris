@@ -30,16 +30,14 @@ run-prod:
 format:
 	$(call log, reorganizing imports & formatting code)
 	isort --virtual-env="$(DIR_VENV)" \
-		"$(DIR_SRC)" \
-		"$(DIR_TESTS)" \
-		"$(DIR_SCRIPTS)" \
 		"$(DIR_CONFIG)" \
+		"$(DIR_SCRIPTS)" \
+		"$(DIR_SRC)" \
 		|| exit 1
 	black \
-		"$(DIR_SRC)" \
-		"$(DIR_TESTS)" \
-		"$(DIR_SCRIPTS)" \
 		"$(DIR_CONFIG)" \
+		"$(DIR_SCRIPTS)" \
+		"$(DIR_SRC)" \
 		|| exit 1
 
 
@@ -61,29 +59,26 @@ tests:
 coverage:
 	$(call log, calculating coverage)
 	coverage html
-	coverage xml
 
 
 .PHONY: code-typing
 code-typing:
 	$(call log, checking code typing)
-	mypy
+	mypy ${DIR_SRC}
 
 
 .PHONY: code-format
 code-format:
 	$(call log, checking code format)
 	isort --virtual-env="$(DIR_VENV)" --check-only \
-		"$(DIR_SRC)" \
-		"$(DIR_TESTS)" \
-		"$(DIR_SCRIPTS)" \
 		"$(DIR_CONFIG)" \
+		"$(DIR_SCRIPTS)" \
+		"$(DIR_SRC)" \
 		|| exit 1
 	black --check \
-		"$(DIR_SRC)" \
-		"$(DIR_TESTS)" \
-		"$(DIR_SCRIPTS)" \
 		"$(DIR_CONFIG)" \
+		"$(DIR_SCRIPTS)" \
+		"$(DIR_SRC)" \
 		|| exit 1
 
 
@@ -197,12 +192,12 @@ createdb:
 
 
 .PHONY: migrations
-migrations:
+migrations::
 	$(call log, generating migrations)
 
 
 .PHONY: migrate
-migrate:
+migrate::
 	$(call log, applying migrations)
 
 

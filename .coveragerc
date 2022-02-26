@@ -1,15 +1,25 @@
 [run]
 branch = True
-omit = \
-    src/framework/tests/*
+# fixme: bug with sqlalchemy 1.4
+concurrency = greenlet
+omit =
     src/main/app.py
-    tests/*
+    src/management/*
+    src/migrations/*
 relative_files = True
 source = src
 
 
 [report]
-fail_under = 50
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
+    if __name__ == .__main__.:
+    @(abc\.)?abstractmethod
+fail_under = ${COVERAGE_MIN-50}
 skip_covered = False
 skip_empty = True
 sort = -Cover
@@ -18,4 +28,4 @@ sort = -Cover
 [html]
 skip_covered = False
 skip_empty = True
-title = Alpha
+title = Ex Libris

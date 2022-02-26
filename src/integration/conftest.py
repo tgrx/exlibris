@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from framework.config import settings
-from main.asgi import application
+from main.service import app
 
 TIMEOUT = 4
 
@@ -12,7 +12,7 @@ TIMEOUT = 4
 @pytest.fixture(scope="function")
 async def asgi_client() -> AsyncGenerator[httpx.AsyncClient, None]:
     async with httpx.AsyncClient(
-        app=application,
+        app=app,
         base_url="http://asgi",
         timeout=TIMEOUT,
     ) as client:
