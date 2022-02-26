@@ -84,5 +84,5 @@ async def handle_webhook_update(update: telegram.Update) -> None:
         )
 
         action = await dispatcher.dispatch(ctx)
-        if action:
-            await action
+        assert action
+        await action
