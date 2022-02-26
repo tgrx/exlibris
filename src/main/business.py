@@ -2,7 +2,6 @@ from typing import List
 from typing import Optional
 
 from consigliere import telegram
-from devtools import debug
 from sqlalchemy import and_
 from sqlalchemy import delete
 from sqlalchemy import select
@@ -27,7 +26,6 @@ async def get_users(
     sql = select(db.User)
     cursor: CursorResult = await session.execute(sql)
     rows: list[Row] = cursor.all()
-    debug(rows)
     users: list[db.User] = [row.User for row in rows]
     return users
 
